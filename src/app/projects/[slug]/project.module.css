@@ -1,0 +1,46 @@
+.wrap {
+  max-width: 800px;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.back:hover {
+  color: var(--accent-blue);
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.block {
+  margin-bottom: 1.75rem;
+}
+
+.h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--accent-blue);
+}
+
+.p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.actions {
+  margin-top: 2rem;
+}

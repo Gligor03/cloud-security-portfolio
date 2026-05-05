@@ -1,0 +1,142 @@
+/* Shared “circle + glowing mark + title” for major sections */
+.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  overflow: visible;
+}
+
+.markColumn {
+  flex-shrink: 0;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle {
+  position: relative;
+  z-index: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  background: radial-gradient(
+    circle at 30% 25%,
+    rgba(56, 189, 248, 0.22),
+    rgba(7, 11, 18, 0.94)
+  );
+  animation: sectionCircleRing 1.65s ease-in-out infinite;
+}
+
+.circle::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(56, 189, 248, 0.55) 0%,
+    rgba(52, 211, 153, 0.22) 38%,
+    transparent 72%
+  );
+  animation: sectionCircleBloom 1.65s ease-in-out infinite;
+}
+
+@keyframes sectionCircleRing {
+  0%,
+  100% {
+    border-color: rgba(56, 189, 248, 0.35);
+    box-shadow:
+      0 0 4px rgba(56, 189, 248, 0.25),
+      0 0 14px rgba(56, 189, 248, 0.12);
+  }
+  50% {
+    border-color: rgba(125, 211, 252, 0.95);
+    box-shadow:
+      0 0 0 1px rgba(56, 189, 248, 0.5),
+      0 0 22px rgba(56, 189, 248, 0.95),
+      0 0 48px rgba(56, 189, 248, 0.65),
+      0 0 80px rgba(52, 211, 153, 0.45),
+      0 0 110px rgba(34, 211, 238, 0.28);
+  }
+}
+
+@keyframes sectionCircleBloom {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.88);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+.markIcon {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: #f0f9ff;
+  /* Optical center: glyphs sit slightly right in 24×24 viewBox */
+  transform: translateX(-2px);
+  animation: markIconGlow 1.65s ease-in-out infinite;
+}
+
+@keyframes markIconGlow {
+  0%,
+  100% {
+    color: #bae6fd;
+    filter: brightness(0.88)
+      drop-shadow(0 0 2px rgba(56, 189, 248, 0.35))
+      drop-shadow(0 0 8px rgba(56, 189, 248, 0.2));
+  }
+  50% {
+    color: #ffffff;
+    filter: brightness(1.45)
+      drop-shadow(0 0 4px rgba(255, 255, 255, 0.85))
+      drop-shadow(0 0 12px rgba(56, 189, 248, 1))
+      drop-shadow(0 0 28px rgba(56, 189, 248, 0.95))
+      drop-shadow(0 0 48px rgba(34, 211, 238, 0.75))
+      drop-shadow(0 0 72px rgba(52, 211, 153, 0.5))
+      drop-shadow(0 0 96px rgba(56, 189, 248, 0.35));
+  }
+}
+
+.heading {
+  margin: 0;
+  padding-top: 0.35rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle {
+    animation: none;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+  }
+
+  .circle::after {
+    animation: none;
+    opacity: 0.45;
+    transform: scale(1);
+  }
+
+  .markIcon {
+    animation: none;
+    color: #7dd3fc;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
+  }
+}

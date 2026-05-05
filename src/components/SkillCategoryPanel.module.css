@@ -1,0 +1,302 @@
+.panel {
+  --cat: #38bdf8;
+  --cat-soft: rgba(56, 189, 248, 0.14);
+  --cat-line: rgba(56, 189, 248, 0.22);
+  --cat-glow: rgba(56, 189, 248, 0.45);
+  position: relative;
+  z-index: 0;
+  border-radius: 12px;
+  padding: 1rem 1rem 0.25rem;
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.92), rgba(7, 11, 18, 0.98));
+  border: 1px solid var(--cat-line);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 0 24px rgba(0, 0, 0, 0.45),
+    0 0 18px var(--cat-soft);
+  transform: translateZ(0) scale(1);
+  transform-origin: center center;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.32, 1),
+    border-color 0.22s ease,
+    box-shadow 0.28s ease;
+}
+
+.panel:hover {
+  z-index: 12;
+  transform: translateZ(48px) scale(1.055);
+  border-color: color-mix(in srgb, var(--cat) 55%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 0 36px rgba(0, 0, 0, 0.55),
+    0 0 32px var(--cat-soft),
+    0 0 64px var(--cat-glow),
+    0 0 96px var(--cat-glow);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 22px var(--cat-glow);
+  opacity: 0.35;
+  transition: opacity 0.28s ease;
+}
+
+.panel:hover::before {
+  opacity: 0.72;
+}
+
+.blue {
+  --cat: #38bdf8;
+  --cat-soft: rgba(56, 189, 248, 0.14);
+  --cat-line: rgba(56, 189, 248, 0.35);
+  --cat-glow: rgba(56, 189, 248, 0.5);
+}
+
+.purple {
+  --cat: #a78bfa;
+  --cat-soft: rgba(167, 139, 250, 0.14);
+  --cat-line: rgba(167, 139, 250, 0.35);
+  --cat-glow: rgba(167, 139, 250, 0.5);
+}
+
+.green {
+  --cat: #34d399;
+  --cat-soft: rgba(52, 211, 153, 0.14);
+  --cat-line: rgba(52, 211, 153, 0.35);
+  --cat-glow: rgba(52, 211, 153, 0.5);
+}
+
+.orange {
+  --cat: #fb923c;
+  --cat-soft: rgba(251, 146, 60, 0.14);
+  --cat-line: rgba(251, 146, 60, 0.38);
+  --cat-glow: rgba(251, 146, 60, 0.5);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--cat-line);
+}
+
+.hexWrap {
+  flex-shrink: 0;
+  margin-top: -6px;
+  color: var(--cat);
+  filter: drop-shadow(0 0 10px var(--cat-glow));
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(0.68rem, 1.1vw, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cat);
+  line-height: 1.25;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-inline: -0.35rem;
+  padding: 0.85rem 0.5rem;
+  border-radius: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  transition:
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
+}
+
+.row:first-of-type {
+  border-top: none;
+}
+
+.row:hover {
+  transform: translateX(2px);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cat) 14%, transparent),
+    rgba(248, 250, 252, 0.04) 48%
+  );
+  box-shadow:
+    inset 4px 0 0 0 var(--cat),
+    0 0 0 1px color-mix(in srgb, var(--cat) 24%, transparent);
+}
+
+.illu {
+  flex-shrink: 0;
+  width: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--cat);
+  opacity: 0.95;
+  transition:
+    opacity 0.22s ease,
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.illu svg {
+  overflow: visible;
+}
+
+.row:hover .illu {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.body {
+  min-width: 0;
+}
+
+.rowTitle {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cat);
+  letter-spacing: -0.01em;
+}
+
+.rowDetail {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Horizontal strip (Engineering Approach) */
+.horizontal .list {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.horizontal .row {
+  flex: 1 1 160px;
+  margin-inline: 0;
+  border-top: none;
+  border-left: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 0.75rem 0.85rem;
+  gap: 0.65rem;
+}
+
+.horizontal .row:first-of-type {
+  border-left: none;
+  padding-left: 0;
+}
+
+.horizontal .row:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cat) 16%, transparent),
+    rgba(248, 250, 252, 0.05) 55%
+  );
+  box-shadow:
+    inset 0 4px 0 0 var(--cat),
+    0 0 0 1px color-mix(in srgb, var(--cat) 22%, transparent);
+}
+
+.orange.horizontal .rowTitle {
+  color: var(--text);
+}
+
+.orange.horizontal .rowDetail {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transform: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .panel::before {
+    transition: none;
+  }
+
+  .panel:hover {
+    z-index: 0;
+    transform: none;
+    border-color: var(--cat-line);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.35),
+      0 0 24px rgba(0, 0, 0, 0.45),
+      0 0 18px var(--cat-soft);
+  }
+
+  .panel:hover::before {
+    opacity: 0.35;
+  }
+
+  .row {
+    transition: background 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .row:hover {
+    transform: none;
+  }
+
+  .horizontal .row:hover {
+    transform: none;
+  }
+
+  .illu {
+    transition: opacity 0.18s ease;
+  }
+
+  .row:hover .illu {
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
+  @media (prefers-reduced-motion: no-preference) {
+    .panel:hover {
+      transform: translateZ(22px) scale(1.028);
+    }
+  }
+
+  .horizontal .list {
+    flex-direction: column;
+  }
+
+  .horizontal .row {
+    border-left: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .horizontal .row:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .horizontal .row:hover {
+    transform: translateX(2px);
+    box-shadow:
+      inset 4px 0 0 0 var(--cat),
+      0 0 0 1px color-mix(in srgb, var(--cat) 22%, transparent);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cat) 14%, transparent),
+      rgba(248, 250, 252, 0.04) 48%
+    );
+  }
+}
