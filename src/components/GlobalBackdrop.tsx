@@ -26,6 +26,8 @@ function smoothstep01(t: number): number {
 const MAX_EDGES = 72;
 const MAX_DEGREE = 2;
 
+type LinkCand = { i: number; j: number; d: number };
+
 function spawnParticle(w: number, h: number): Particle {
   const angle = Math.random() * Math.PI * 2;
   const speedPps = 26 + Math.random() * 152;
@@ -72,18 +74,24 @@ export function GlobalBackdrop() {
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reduceMotion = mq.matches;
+    /** Skip animated links when user requests reduced motion (a11y). */
+    let skipNetworkLinks = reduceMotion;
 
     const onMq = () => {
       reduceMotion = mq.matches;
+      skipNetworkLinks = reduceMotion;
     };
     mq.addEventListener("change", onMq);
 
     let rafId = 0;
+    let tabVisible = document.visibilityState !== "hidden";
     let particles: Particle[] = [];
     let lastTs = performance.now();
     let dpr = 1;
     /** Smoothed stroke alpha per pair key "i,j" with i < j */
     const linkAlphaSmooth = new Map<string, number>();
+    const candsBuf: LinkCand[] = [];
+    const staleLinkKeys: string[] = [];
 
     const makeParticles = (w: number, h: number) => {
       const area = w * h;
@@ -127,20 +135,47 @@ export function GlobalBackdrop() {
       const maxDrawDist = linkSoftMax;
       const span = Math.max(1e-6, linkSoftMax - linkMin);
 
-      type Cand = { i: number; j: number; d: number };
-      const cands: Cand[] = [];
+      /**
+       * Uniform grid + bounded neighborhood: collects the same pairs as scanning all i<j,
+       * but only checks particles in cells within linkSoftMax of particle i (fast on iOS).
+       */
+      candsBuf.length = 0;
+      const cellSize = Math.max(40, linkSoftMax / 3.5);
+      const cellRadius = Math.ceil(linkSoftMax / cellSize) + 1;
+      const grid = new Map<string, number[]>();
+      for (let i = 0; i < n; i++) {
+        const p = particles[i]!;
+        const cx = Math.floor(p.x / cellSize);
+        const cy = Math.floor(p.y / cellSize);
+        const key = `${cx},${cy}`;
+        let bucket = grid.get(key);
+        if (!bucket) {
+          bucket = [];
+          grid.set(key, bucket);
+        }
+        bucket.push(i);
+      }
 
       for (let i = 0; i < n; i++) {
         const pi = particles[i]!;
-        for (let j = i + 1; j < n; j++) {
-          const pj = particles[j]!;
-          const d = Math.hypot(pj.x - pi.x, pj.y - pi.y);
-          if (d <= linkMin || d >= linkSoftMax) continue;
-          cands.push({ i, j, d });
+        const ci = Math.floor(pi.x / cellSize);
+        const cj = Math.floor(pi.y / cellSize);
+        for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+          for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+            const bucket = grid.get(`${ci + dx},${cj + dy}`);
+            if (!bucket) continue;
+            for (const j of bucket) {
+              if (j <= i) continue;
+              const pj = particles[j]!;
+              const d = Math.hypot(pj.x - pi.x, pj.y - pi.y);
+              if (d <= linkMin || d >= linkSoftMax) continue;
+              candsBuf.push({ i, j, d });
+            }
+          }
         }
       }
 
-      cands.sort((a, b) => a.d - b.d);
+      candsBuf.sort((a, b) => a.d - b.d);
 
       const degree = new Uint8Array(n);
       const hairline = Math.max(1 / Math.max(dpr, 1), 0.75);
@@ -155,7 +190,7 @@ export function GlobalBackdrop() {
       const picked: Edge[] = [];
 
       let drawn = 0;
-      for (const { i, j, d } of cands) {
+      for (const { i, j, d } of candsBuf) {
         if (drawn >= MAX_EDGES) break;
         if (degree[i] >= MAX_DEGREE || degree[j] >= MAX_DEGREE) continue;
 
@@ -187,7 +222,8 @@ export function GlobalBackdrop() {
         c.stroke();
       };
 
-      for (const [key, prev] of [...linkAlphaSmooth.entries()]) {
+      staleLinkKeys.length = 0;
+      for (const [key, prev] of linkAlphaSmooth) {
         if (pickedKeys.has(key)) continue;
         const parts = key.split(",");
         const ia = Number(parts[0]);
@@ -197,7 +233,7 @@ export function GlobalBackdrop() {
           Number.isNaN(ia) ||
           Number.isNaN(ja)
         ) {
-          linkAlphaSmooth.delete(key);
+          staleLinkKeys.push(key);
           continue;
         }
         const sep = Math.hypot(
@@ -206,16 +242,19 @@ export function GlobalBackdrop() {
         );
         /* Pair was close, then one particle wrapped — drop immediately (no cross-screen fade). */
         if (sep > maxDrawDist) {
-          linkAlphaSmooth.delete(key);
+          staleLinkKeys.push(key);
           continue;
         }
         const ns = prev * decayK;
         if (ns < 0.007) {
-          linkAlphaSmooth.delete(key);
+          staleLinkKeys.push(key);
           continue;
         }
         linkAlphaSmooth.set(key, ns);
         strokeEdge(ia, ja, ns);
+      }
+      for (const k of staleLinkKeys) {
+        linkAlphaSmooth.delete(k);
       }
 
       for (const { i, j, target } of picked) {
@@ -258,7 +297,11 @@ export function GlobalBackdrop() {
         if (p.y > h + 6) p.y = -6;
       }
 
-      drawNetworkLinks(ctx, w, h, dt);
+      if (skipNetworkLinks) {
+        linkAlphaSmooth.clear();
+      } else {
+        drawNetworkLinks(ctx, w, h, dt);
+      }
 
       for (const p of particles) {
         ctx.beginPath();
@@ -267,16 +310,31 @@ export function GlobalBackdrop() {
         ctx.fill();
       }
 
-      rafId = requestAnimationFrame(tick);
+      if (tabVisible) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    const onVisibility = () => {
+      tabVisible = document.visibilityState !== "hidden";
+      if (tabVisible) {
+        lastTs = performance.now();
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(rafId);
+      }
     };
 
     layout();
     window.addEventListener("resize", layout);
+    document.addEventListener("visibilitychange", onVisibility);
     rafId = requestAnimationFrame(tick);
 
     return () => {
       mq.removeEventListener("change", onMq);
       window.removeEventListener("resize", layout);
+      document.removeEventListener("visibilitychange", onVisibility);
       cancelAnimationFrame(rafId);
     };
   }, []);
