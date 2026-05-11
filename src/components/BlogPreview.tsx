@@ -23,37 +23,80 @@ export function BlogPreview() {
     s.phaseStart = performance.now();
     setTyped("");
 
-    const id = window.setInterval(() => {
-      const now = performance.now();
-      if (s.phase === "typing") {
-        const n = Math.min(text.length, Math.floor((now - s.phaseStart) / typeMs));
-        const next = text.slice(0, n);
-        setTyped((prev) => (prev === next ? prev : next));
-        if (n >= text.length) {
-          s.phase = "pauseTyped";
-          s.phaseStart = now;
-        }
-      } else if (s.phase === "pauseTyped") {
-        if (now - s.phaseStart > pauseFullMs) {
-          s.phase = "deleting";
-          s.phaseStart = now;
-        }
-      } else if (s.phase === "deleting") {
-        const gone = Math.floor((now - s.phaseStart) / deleteMs);
-        const n = Math.max(0, text.length - gone);
-        const next = text.slice(0, n);
-        setTyped((prev) => (prev === next ? prev : next));
-        if (n === 0) {
-          s.phase = "pauseEmpty";
-          s.phaseStart = now;
-        }
-      } else if (now - s.phaseStart > pauseEmptyMs) {
-        s.phase = "typing";
-        s.phaseStart = now;
-      }
-    }, 24);
+    let cancelled = false;
+    let rafId = 0;
+    let timeoutId = 0;
 
-    return () => window.clearInterval(id);
+    const clearTimers = () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      rafId = 0;
+      timeoutId = 0;
+    };
+
+    let lastEmitted = "";
+
+    const emit = (slice: string) => {
+      if (slice === lastEmitted) return;
+      lastEmitted = slice;
+      setTyped(slice);
+    };
+
+    const typingTick = () => {
+      if (cancelled) return;
+      if (s.phase !== "typing") return;
+
+      const now = performance.now();
+      const n = Math.min(text.length, Math.floor((now - s.phaseStart) / typeMs));
+      emit(text.slice(0, n));
+
+      if (n >= text.length) {
+        s.phase = "pauseTyped";
+        s.phaseStart = now;
+        timeoutId = window.setTimeout(() => {
+          if (cancelled) return;
+          s.phase = "deleting";
+          s.phaseStart = performance.now();
+          deleteTick();
+        }, pauseFullMs);
+        return;
+      }
+
+      rafId = requestAnimationFrame(typingTick);
+    };
+
+    const deleteTick = () => {
+      if (cancelled) return;
+      if (s.phase !== "deleting") return;
+
+      const now = performance.now();
+      const gone = Math.floor((now - s.phaseStart) / deleteMs);
+      const n = Math.max(0, text.length - gone);
+      emit(text.slice(0, n));
+
+      if (n === 0) {
+        s.phase = "pauseEmpty";
+        s.phaseStart = now;
+        timeoutId = window.setTimeout(() => {
+          if (cancelled) return;
+          s.phase = "typing";
+          s.phaseStart = performance.now();
+          lastEmitted = "";
+          setTyped("");
+          typingTick();
+        }, pauseEmptyMs);
+        return;
+      }
+
+      rafId = requestAnimationFrame(deleteTick);
+    };
+
+    typingTick();
+
+    return () => {
+      cancelled = true;
+      clearTimers();
+    };
   }, []);
 
   return (

@@ -96,43 +96,83 @@ export function Hero() {
     t.phaseStart = performance.now();
     setTypedLine("");
 
-    const id = window.setInterval(() => {
-      const now = performance.now();
-      const text = phrases[t.phraseIndex % phrases.length] ?? "";
+    let cancelled = false;
+    let rafId = 0;
+    let timeoutId = 0;
 
-      if (t.phase === "typing") {
-        const n = Math.min(text.length, Math.floor((now - t.phaseStart) / typeMs));
-        const slice = text.slice(0, n);
-        setTypedLine((prev) => (prev === slice ? prev : slice));
-        if (n >= text.length) {
-          t.phase = "pauseTyped";
-          t.phaseStart = now;
-        }
-      } else if (t.phase === "pauseTyped") {
-        if (now - t.phaseStart > pauseFullMs) {
+    const clearTimers = () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      rafId = 0;
+      timeoutId = 0;
+    };
+
+    let lastEmitted = "";
+
+    const emit = (slice: string) => {
+      if (slice === lastEmitted) return;
+      lastEmitted = slice;
+      setTypedLine(slice);
+    };
+
+    const typingTick = () => {
+      if (cancelled) return;
+      const text = phrases[t.phraseIndex % phrases.length] ?? "";
+      if (t.phase !== "typing") return;
+
+      const now = performance.now();
+      const n = Math.min(text.length, Math.floor((now - t.phaseStart) / typeMs));
+      emit(text.slice(0, n));
+
+      if (n >= text.length) {
+        t.phase = "pauseTyped";
+        t.phaseStart = now;
+        timeoutId = window.setTimeout(() => {
+          if (cancelled) return;
           t.phase = "deleting";
-          t.phaseStart = now;
-        }
-      } else if (t.phase === "deleting") {
-        const gone = Math.floor((now - t.phaseStart) / deleteMs);
-        const n = Math.max(0, text.length - gone);
-        const slice = text.slice(0, n);
-        setTypedLine((prev) => (prev === slice ? prev : slice));
-        if (n === 0) {
-          t.phase = "pauseEmpty";
-          t.phaseStart = now;
-        }
-      } else {
-        setTypedLine((prev) => (prev === "" ? prev : ""));
-        if (now - t.phaseStart > pauseEmptyMs) {
+          t.phaseStart = performance.now();
+          deleteTick();
+        }, pauseFullMs);
+        return;
+      }
+
+      rafId = requestAnimationFrame(typingTick);
+    };
+
+    const deleteTick = () => {
+      if (cancelled) return;
+      const text = phrases[t.phraseIndex % phrases.length] ?? "";
+      if (t.phase !== "deleting") return;
+
+      const now = performance.now();
+      const gone = Math.floor((now - t.phaseStart) / deleteMs);
+      const n = Math.max(0, text.length - gone);
+      emit(text.slice(0, n));
+
+      if (n === 0) {
+        t.phase = "pauseEmpty";
+        t.phaseStart = now;
+        timeoutId = window.setTimeout(() => {
+          if (cancelled) return;
           t.phraseIndex++;
           t.phase = "typing";
-          t.phaseStart = now;
-        }
+          t.phaseStart = performance.now();
+          lastEmitted = "";
+          setTypedLine("");
+          typingTick();
+        }, pauseEmptyMs);
+        return;
       }
-    }, 24);
 
-    return () => window.clearInterval(id);
+      rafId = requestAnimationFrame(deleteTick);
+    };
+
+    typingTick();
+
+    return () => {
+      cancelled = true;
+      clearTimers();
+    };
   }, [phrases]);
 
   return (
