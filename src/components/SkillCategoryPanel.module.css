@@ -13,7 +13,8 @@
     0 0 0 1px rgba(0, 0, 0, 0.35),
     0 0 24px rgba(0, 0, 0, 0.45),
     0 0 18px var(--cat-soft);
-  transform: translateZ(0) scale(1);
+  /* 2D only — iOS WebKit often glitches or reloads with perspective + translateZ() */
+  transform: scale(1);
   transform-origin: center center;
   transition:
     transform 0.38s cubic-bezier(0.22, 1, 0.32, 1),
@@ -21,16 +22,22 @@
     box-shadow 0.28s ease;
 }
 
-.panel:hover {
-  z-index: 12;
-  transform: translateZ(48px) scale(1.055);
-  border-color: color-mix(in srgb, var(--cat) 55%, transparent);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 0 36px rgba(0, 0, 0, 0.55),
-    0 0 32px var(--cat-soft),
-    0 0 64px var(--cat-glow),
-    0 0 96px var(--cat-glow);
+@media (hover: hover) and (pointer: fine) {
+  .panel:hover {
+    z-index: 12;
+    transform: translateY(-10px) scale(1.045);
+    border-color: color-mix(in srgb, var(--cat) 55%, transparent);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.35),
+      0 0 36px rgba(0, 0, 0, 0.55),
+      0 0 32px var(--cat-soft),
+      0 0 64px var(--cat-glow),
+      0 0 96px var(--cat-glow);
+  }
+
+  .panel:hover::before {
+    opacity: 0.72;
+  }
 }
 
 .panel::before {
@@ -42,10 +49,6 @@
   box-shadow: 0 0 22px var(--cat-glow);
   opacity: 0.35;
   transition: opacity 0.28s ease;
-}
-
-.panel:hover::before {
-  opacity: 0.72;
 }
 
 .blue {
@@ -126,16 +129,23 @@
   border-top: none;
 }
 
-.row:hover {
-  transform: translateX(2px);
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--cat) 14%, transparent),
-    rgba(248, 250, 252, 0.04) 48%
-  );
-  box-shadow:
-    inset 4px 0 0 0 var(--cat),
-    0 0 0 1px color-mix(in srgb, var(--cat) 24%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    transform: translateX(2px);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cat) 14%, transparent),
+      rgba(248, 250, 252, 0.04) 48%
+    );
+    box-shadow:
+      inset 4px 0 0 0 var(--cat),
+      0 0 0 1px color-mix(in srgb, var(--cat) 24%, transparent);
+  }
+
+  .row:hover .illu {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 .illu {
@@ -152,11 +162,6 @@
 
 .illu svg {
   overflow: visible;
-}
-
-.row:hover .illu {
-  opacity: 1;
-  transform: scale(1.08);
 }
 
 .body {
@@ -199,16 +204,18 @@
   padding-left: 0;
 }
 
-.horizontal .row:hover {
-  transform: translateY(-3px);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--cat) 16%, transparent),
-    rgba(248, 250, 252, 0.05) 55%
-  );
-  box-shadow:
-    inset 0 4px 0 0 var(--cat),
-    0 0 0 1px color-mix(in srgb, var(--cat) 22%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .horizontal .row:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cat) 16%, transparent),
+      rgba(248, 250, 252, 0.05) 55%
+    );
+    box-shadow:
+      inset 0 4px 0 0 var(--cat),
+      0 0 0 1px color-mix(in srgb, var(--cat) 22%, transparent);
+  }
 }
 
 .orange.horizontal .rowTitle {
@@ -266,12 +273,6 @@
 }
 
 @media (max-width: 720px) {
-  @media (prefers-reduced-motion: no-preference) {
-    .panel:hover {
-      transform: translateZ(22px) scale(1.028);
-    }
-  }
-
   .horizontal .list {
     flex-direction: column;
   }
@@ -288,6 +289,9 @@
     padding-top: 0;
   }
 
+}
+
+@media (max-width: 720px) and (hover: hover) and (pointer: fine) {
   .horizontal .row:hover {
     transform: translateX(2px);
     box-shadow:

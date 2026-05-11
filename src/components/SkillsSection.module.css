@@ -3,8 +3,6 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   align-items: stretch;
-  perspective: 1300px;
-  perspective-origin: 50% 42%;
   overflow: visible;
   padding-block: 0.75rem;
   margin-block: -0.35rem;
@@ -13,7 +11,6 @@
 .panelShell {
   position: relative;
   overflow: visible;
-  transform-style: preserve-3d;
 }
 
 .spanFull {
@@ -37,7 +34,5 @@
 @media (max-width: 720px) {
   .categoryGrid {
     grid-template-columns: 1fr;
-    perspective: 1000px;
-    perspective-origin: 50% 35%;
   }
 }
