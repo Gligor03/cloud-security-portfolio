@@ -48,38 +48,30 @@ export const projects: Project[] = [
       "How to design retrieval quality and cloud architecture together so generated answers remain accurate, auditable, and secure at scale.",
   },
   {
-    slug: "smart-budget-buddy-bedrock-agent",
-    title: "Smart Budget Buddy - AWS Bedrock Agent",
-    icon: "💰",
-    shortDescription:
-      "Designed a student-focused AI financial assistant using AWS Bedrock Agent Builder. Defined agent persona, applied Bedrock Guardrails to prevent bias, and iteratively tested with real-world scenarios.",
-    tech: ["AWS Bedrock", "Prompt Engineering", "Guardrails", "Responsible AI"],
-    githubUrl: "https://github.com/yourusername/smart-budget-buddy-bedrock-agent",
-    architecture:
-      "Agent-first architecture on Bedrock Agent Builder with intent-focused prompt templates, constrained response behavior, and a policy layer to enforce safer financial guidance boundaries.",
-    built:
-      "Created assistant persona/rules, structured conversational flows for common student budgeting tasks, and validated outcomes with iterative real-world prompt scenarios.",
-    security:
-      "Used Bedrock Guardrails and response constraints to reduce unsafe outputs, limit bias-prone suggestions, and keep guidance within practical non-advisory boundaries.",
-    learned:
-      "Responsible AI behavior requires both technical controls and repeated scenario testing; prompt design alone is not sufficient.",
-  },
-  {
     slug: "aws-vpc-infrastructure",
-    title: "AWS Cloud Infrastructure",
+    title: "Secure AWS Cloud Infrastructure",
     icon: "☁️",
     shortDescription:
-      "Isolated VPC with public/private subnets, EC2 bastion pattern, and IAM tuned for least privilege.",
-    tech: ["AWS VPC", "EC2", "IAM", "Security Groups", "Terraform"],
+      "Designed and deployed secure AWS infrastructure using Terraform, including VPC networking, IAM roles, hardened S3 storage, CloudTrail logging, and CloudWatch monitoring. Applied least-privilege access, network segmentation, and infrastructure automation to improve security, scalability, and cost control.",
+    tech: [
+      "AWS VPC",
+      "EC2",
+      "IAM",
+      "S3",
+      "Security Groups",
+      "Terraform",
+      "CloudTrail",
+      "CloudWatch",
+    ],
     githubUrl: "https://github.com/yourusername/aws-vpc-lab",
     architecture:
-      "Multi-AZ VPC with Internet Gateway, NAT for private egress, segmented subnets, and IAM roles scoped to instance profiles instead of long-lived keys.",
+      "Terraform-defined VPC with public and private subnets, Internet Gateway and NAT patterns for controlled egress, an EC2 bastion for administrative access, IAM roles and instance profiles (no long-lived keys), hardened S3 with encryption and least-privilege policies, CloudTrail for API audit logging, and CloudWatch for metrics and operational visibility.",
     built:
-      "Terraform modules for network baseline, baseline security groups, and tagged resources for cost visibility.",
+      "Provisioned repeatable infrastructure modules, wired logging and monitoring (CloudTrail, CloudWatch), implemented deployment and teardown automation to support reproducible environments and cost control, and validated network segmentation and access paths end to end.",
     security:
-      "Restricted SSH ingress, no direct DB exposure, SSM Session Manager preferred over open port 22, and guardrails preventing `0.0.0.0/0` on management ports.",
+      "Least-privilege IAM, network segmentation, encryption at rest and in transit where applicable, restricted management surface (bastion / Session Manager patterns), and centralized audit trails via CloudTrail to reduce blind spots and blast radius.",
     learned:
-      "Subnet design trade-offs and how small IAM policy mistakes become large blast-radius issues.",
+      "Security-by-design in the cloud is a combination of IAM discipline, observable infrastructure, and automation—small misconfigurations compound quickly without logging, monitoring, and repeatable IaC.",
   },
 ];
 

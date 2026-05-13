@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SectionHeader } from "@/components/SectionHeader";
 import { projects } from "@/data/projects";
 import styles from "./ProjectsSection.module.css";
@@ -28,13 +27,6 @@ export function ProjectsSection() {
                 ))}
               </div>
               <div className={styles.actions}>
-                <Link
-                  href={`/projects/${p.slug}`}
-                  className="btn btnPrimary"
-                  style={{ fontSize: "0.88rem", padding: "0.5rem 1rem" }}
-                >
-                  View Details
-                </Link>
                 <a
                   href={p.githubUrl}
                   target="_blank"

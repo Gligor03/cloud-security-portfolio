@@ -135,43 +135,14 @@ export function GlobalBackdrop() {
       const maxDrawDist = linkSoftMax;
       const span = Math.max(1e-6, linkSoftMax - linkMin);
 
-      /**
-       * Uniform grid + bounded neighborhood: collects the same pairs as scanning all i<j,
-       * but only checks particles in cells within linkSoftMax of particle i (fast on iOS).
-       */
       candsBuf.length = 0;
-      const cellSize = Math.max(40, linkSoftMax / 3.5);
-      const cellRadius = Math.ceil(linkSoftMax / cellSize) + 1;
-      const grid = new Map<string, number[]>();
-      for (let i = 0; i < n; i++) {
-        const p = particles[i]!;
-        const cx = Math.floor(p.x / cellSize);
-        const cy = Math.floor(p.y / cellSize);
-        const key = `${cx},${cy}`;
-        let bucket = grid.get(key);
-        if (!bucket) {
-          bucket = [];
-          grid.set(key, bucket);
-        }
-        bucket.push(i);
-      }
-
       for (let i = 0; i < n; i++) {
         const pi = particles[i]!;
-        const ci = Math.floor(pi.x / cellSize);
-        const cj = Math.floor(pi.y / cellSize);
-        for (let dx = -cellRadius; dx <= cellRadius; dx++) {
-          for (let dy = -cellRadius; dy <= cellRadius; dy++) {
-            const bucket = grid.get(`${ci + dx},${cj + dy}`);
-            if (!bucket) continue;
-            for (const j of bucket) {
-              if (j <= i) continue;
-              const pj = particles[j]!;
-              const d = Math.hypot(pj.x - pi.x, pj.y - pi.y);
-              if (d <= linkMin || d >= linkSoftMax) continue;
-              candsBuf.push({ i, j, d });
-            }
-          }
+        for (let j = i + 1; j < n; j++) {
+          const pj = particles[j]!;
+          const d = Math.hypot(pj.x - pi.x, pj.y - pi.y);
+          if (d <= linkMin || d >= linkSoftMax) continue;
+          candsBuf.push({ i, j, d });
         }
       }
 
